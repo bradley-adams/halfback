@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package halfback.events.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_TRY = 1;
+  EVENT_TYPE_PENALTY_TRY = 2;
+  EVENT_TYPE_CONVERSION = 3;
+  EVENT_TYPE_PENALTY_GOAL = 4;
+  EVENT_TYPE_DROP_GOAL = 5;
+}
+
+message MatchEvent {
+  string event_id = 1;
+  string match_id = 2;
+  google.protobuf.Timestamp event_time = 3;
+  EventType event_type = 4;
+}
