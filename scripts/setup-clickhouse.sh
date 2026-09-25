@@ -3,6 +3,7 @@ set -euo pipefail
 
 CONTAINER=halfback-clickhouse
 SCHEMA_DIR=/var/lib/clickhouse/format_schemas
+CH_PASSWORD=halfback
 
 echo "Copying proto files into ClickHouse container..."
 docker exec -it "$CONTAINER" rm -rf "$SCHEMA_DIR/halfback"
@@ -18,7 +19,7 @@ echo "Ensuring placeholder file for schema-only queries exists..."
 docker exec -it "$CONTAINER" touch /var/lib/clickhouse/user_files/nonexist
 
 echo "Creating database and table..."
-docker exec -it "$CONTAINER" clickhouse-client --multiquery --query "
+docker exec -it "$CONTAINER" clickhouse-client --password "$CH_PASSWORD" --multiquery --query "
 CREATE DATABASE IF NOT EXISTS halfback;
 
 CREATE TABLE IF NOT EXISTS halfback.match_events
@@ -29,4 +30,4 @@ SETTINGS format_schema = 'halfback/events/v1/events.proto:MatchEvent';
 "
 
 echo "Done. Current structure:"
-docker exec -it "$CONTAINER" clickhouse-client --query "DESCRIBE halfback.match_events" --format PrettyCompact
+docker exec -it "$CONTAINER" clickhouse-client --password "$CH_PASSWORD" --query "DESCRIBE halfback.match_events" --format PrettyCompact
