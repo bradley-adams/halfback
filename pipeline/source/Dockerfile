@@ -8,11 +8,11 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /simulator ./simulator
+RUN CGO_ENABLED=0 GOOS=linux go build -o /source ./pipeline/source
 
 # Runtime stage
 FROM gcr.io/distroless/static-debian12
 
-COPY --from=builder /simulator /simulator
+COPY --from=builder /source /source
 
-ENTRYPOINT ["/simulator"]
+ENTRYPOINT ["/source"]
