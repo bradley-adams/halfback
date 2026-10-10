@@ -12,7 +12,15 @@ spec:
             imagePullPolicy: Never
     - name: out
       sink:
-        log: {}
+        udsink:
+          container:
+            image: halfback-sink:dev
+            imagePullPolicy: Never
+            env:
+              - name: CLICKHOUSE_HOST
+                value: clickhouse:8123
+              - name: CLICKHOUSE_PASSWORD
+                value: halfback
   edges:
     - from: in
       to: out
