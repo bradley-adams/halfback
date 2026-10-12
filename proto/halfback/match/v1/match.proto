@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package halfback.match.v1;
+
+service MatchService {
+  rpc ListMatchEvents(ListMatchEventsRequest) returns (ListMatchEventsResponse);
+}
+
+message ListMatchEventsRequest {
+  string match_id = 1;
+}
+
+message MatchEventSummary {
+  string event_id = 1;
+  string event_type = 2;
+  int64 event_time_seconds = 3;
+}
+
+message ListMatchEventsResponse {
+  repeated MatchEventSummary events = 1;
+}
