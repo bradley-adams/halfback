@@ -23,7 +23,7 @@ docker exec -it "$CONTAINER" clickhouse-client --password "$CH_PASSWORD" --multi
 CREATE DATABASE IF NOT EXISTS halfback;
 
 CREATE TABLE IF NOT EXISTS halfback.match_events
-ENGINE = MergeTree
+ENGINE = ReplacingMergeTree
 ORDER BY (match_id, event_id)
 AS SELECT * FROM file('nonexist', 'Protobuf')
 SETTINGS format_schema = 'halfback/events/v1/events.proto:MatchEvent';
