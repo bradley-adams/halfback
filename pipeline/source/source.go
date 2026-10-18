@@ -13,12 +13,42 @@ import (
 	eventsv1 "github.com/bradley-adams/halfback/gen/go/halfback/events/v1"
 )
 
-var scoringTypes = []eventsv1.EventType{
-	eventsv1.EventType_EVENT_TYPE_TRY,
-	eventsv1.EventType_EVENT_TYPE_PENALTY_TRY,
-	eventsv1.EventType_EVENT_TYPE_CONVERSION,
-	eventsv1.EventType_EVENT_TYPE_PENALTY_GOAL,
-	eventsv1.EventType_EVENT_TYPE_DROP_GOAL,
+type weightedEventType struct {
+	eventType eventsv1.EventType
+	weight    int
+}
+
+// primaryScoringPlays excludes Conversion deliberately — a conversion
+// is never its own independent play, it's a consequence of a Try.
+var primaryScoringPlays = []weightedEventType{
+	{eventsv1.EventType_EVENT_TYPE_TRY, 45},
+	{eventsv1.EventType_EVENT_TYPE_PENALTY_GOAL, 40},
+	{eventsv1.EventType_EVENT_TYPE_DROP_GOAL, 8},
+	{eventsv1.EventType_EVENT_TYPE_PENALTY_TRY, 7},
+}
+
+// conversionSuccessRate is the rough real-world chance a conversion
+// attempt succeeds after a try.
+const conversionSuccessRate = 0.75
+
+// pickPrimaryEventType chooses a scoring play at random, weighted so
+// tries and penalty goals are common and drop goals/penalty tries are
+// rare, roughly reflecting a real match.
+func pickPrimaryEventType() eventsv1.EventType {
+	total := 0
+	for _, t := range primaryScoringPlays {
+		total += t.weight
+	}
+
+	r := rand.Intn(total)
+	for _, t := range primaryScoringPlays {
+		if r < t.weight {
+			return t.eventType
+		}
+		r -= t.weight
+	}
+
+	return primaryScoringPlays[0].eventType // unreachable
 }
 
 // MatchEventSource is a user-defined Numaflow source that generates
@@ -27,6 +57,7 @@ var scoringTypes = []eventsv1.EventType{
 type MatchEventSource struct {
 	matchID  string
 	eventNum int
+	pending  []eventsv1.EventType
 }
 
 func NewMatchEventSource() *MatchEventSource {
@@ -43,12 +74,23 @@ func (s *MatchEventSource) Read(ctx context.Context, readRequest sourcesdk.ReadR
 			return
 		}
 
+		var eventType eventsv1.EventType
+		if len(s.pending) > 0 {
+			eventType = s.pending[0]
+			s.pending = s.pending[1:]
+		} else {
+			eventType = pickPrimaryEventType()
+			if eventType == eventsv1.EventType_EVENT_TYPE_TRY && rand.Float64() < conversionSuccessRate {
+				s.pending = append(s.pending, eventsv1.EventType_EVENT_TYPE_CONVERSION)
+			}
+		}
+
 		s.eventNum++
 		event := &eventsv1.MatchEvent{
 			EventId:   fmt.Sprintf("evt-%d", s.eventNum),
 			MatchId:   s.matchID,
 			EventTime: timestamppb.Now(),
-			EventType: scoringTypes[rand.Intn(len(scoringTypes))],
+			EventType: eventType,
 		}
 
 		data, err := proto.Marshal(event)
