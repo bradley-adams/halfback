@@ -10,12 +10,14 @@ import (
 	"os"
 
 	sinksdk "github.com/numaproj/numaflow-go/pkg/sinker"
+	"google.golang.org/protobuf/encoding/protodelim"
+	"google.golang.org/protobuf/proto"
+
+	eventsv1 "github.com/bradley-adams/halfback/gen/go/halfback/events/v1"
 )
 
-const insertQuery = `INSERT INTO halfback.match_events SETTINGS format_schema='halfback/events/v1/events.proto:MatchEvent' FORMAT ProtobufSingle`
+const insertQuery = `INSERT INTO halfback.match_events SETTINGS format_schema='halfback/events/v1/events.proto:MatchEvent' FORMAT Protobuf`
 
-// ClickHouseSink is a user-defined Numaflow sink that writes MatchEvent
-// protobuf bytes straight into ClickHouse via its HTTP interface.
 type ClickHouseSink struct {
 	insertURL string
 	client    *http.Client
@@ -45,34 +47,60 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-// Sink writes each incoming MatchEvent to ClickHouse, one HTTP insert
-// per message. Each message is acknowledged or failed independently.
+// Batches all messages into one length-delimited Protobuf stream and
+// sends a single insert. The HTTP request either succeeds or fails as
+// a whole; individually malformed messages are excluded before that.
 func (s *ClickHouseSink) Sink(ctx context.Context, datumStreamCh <-chan sinksdk.Datum) sinksdk.Responses {
 	responses := sinksdk.ResponsesBuilder()
 
+	var buf bytes.Buffer
+	var ids []string
+
 	for datum := range datumStreamCh {
-		id := datum.ID()
-
-		req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.insertURL, bytes.NewReader(datum.Value()))
-		if err != nil {
-			responses = responses.Append(sinksdk.ResponseFailure(id, err.Error()))
+		event := &eventsv1.MatchEvent{}
+		if err := proto.Unmarshal(datum.Value(), event); err != nil {
+			responses = responses.Append(sinksdk.ResponseFailure(datum.ID(), err.Error()))
 			continue
 		}
 
-		resp, err := s.client.Do(req)
-		if err != nil {
-			responses = responses.Append(sinksdk.ResponseFailure(id, err.Error()))
+		if _, err := protodelim.MarshalTo(&buf, event); err != nil {
+			responses = responses.Append(sinksdk.ResponseFailure(datum.ID(), err.Error()))
 			continue
 		}
 
-		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			resp.Body.Close()
+		ids = append(ids, datum.ID())
+	}
+
+	if len(ids) == 0 {
+		return responses
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.insertURL, &buf)
+	if err != nil {
+		for _, id := range ids {
+			responses = responses.Append(sinksdk.ResponseFailure(id, err.Error()))
+		}
+		return responses
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		for _, id := range ids {
+			responses = responses.Append(sinksdk.ResponseFailure(id, err.Error()))
+		}
+		return responses
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		for _, id := range ids {
 			responses = responses.Append(sinksdk.ResponseFailure(id, string(body)))
-			continue
 		}
-		resp.Body.Close()
+		return responses
+	}
 
+	for _, id := range ids {
 		responses = responses.Append(sinksdk.ResponseOK(id))
 	}
 
