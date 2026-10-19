@@ -21,6 +21,15 @@ spec:
                 value: clickhouse:8123
               - name: CLICKHOUSE_PASSWORD
                 value: halfback
+        retryStrategy:
+          backoff:
+            interval: 1s
+            factor: 2.0
+            cap: 30s
+            steps: 5
+          onFailure: fallback
+        fallback:
+          log: {}
   edges:
     - from: in
       to: out
