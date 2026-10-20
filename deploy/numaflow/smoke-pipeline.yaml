@@ -11,6 +11,8 @@ spec:
             image: halfback-simulator:dev
             imagePullPolicy: Never
     - name: out
+      scale:
+        max: 3
       sink:
         udsink:
           container:
