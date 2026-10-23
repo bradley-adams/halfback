@@ -16,18 +16,15 @@ Manifest: `deploy/numaflow/halfback-pipeline.yaml` (source: simulator, sink: Cli
 Apply/update: `kubectl apply -f deploy/numaflow/halfback-pipeline.yaml`
 Check status: `kubectl get pods`
 
-Rebuilding the source or sink after a code change:
+Rebuild and reload an image after a code change, then restart its pod:
 ```bash
-docker build -f pipeline/source/Dockerfile -t halfback-simulator:dev .
-kind load docker-image halfback-simulator:dev --name halfback
-kubectl delete pod -l numaflow.numaproj.io/vertex-name=in
+docker build -f pipeline/source/Dockerfile -t halfback-simulator:dev .   # or pipeline/sink, halfback-sink
+kind load docker-image halfback-simulator:dev --name halfback            # match the tag above
+kubectl delete pod -l numaflow.numaproj.io/vertex-name=in                # or vertex-name=out for the sink
 ```
-(swap `source`/`simulator`/`vertex-name=in` for `sink`/`sink`/`vertex-name=out` to rebuild the sink instead)
 
 ClickHouse is reached from inside the cluster via a Service/Endpoints pointing at the Docker `kind` network's gateway IP (see `deploy/clickhouse/service.yaml`). If the kind cluster is ever recreated, that IP may need updating — check with:
-```bash
-docker network inspect kind -f '{{json .IPAM.Config}}'
-```
+`docker network inspect kind -f '{{json .IPAM.Config}}'`
 
 ## MatchService (gRPC)
 Run locally: `go run ./services/match` (listens on :50051)
