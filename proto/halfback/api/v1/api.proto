@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package halfback.api.v1;
+
+import "google/api/annotations.proto";
+
+service MatchPublicService {
+  rpc ListMatchEvents(ListMatchEventsRequest) returns (ListMatchEventsResponse) {
+    option (google.api.http) = {get: "/v1/matches/{match_id}/events"};
+  }
+}
+
+message ListMatchEventsRequest {
+  string match_id = 1;
+}
+
+message MatchEventSummary {
+  string event_id = 1;
+  string event_type = 2;
+  int64 event_time_seconds = 3;
+}
+
+message ListMatchEventsResponse {
+  repeated MatchEventSummary events = 1;
+}
