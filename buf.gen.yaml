@@ -11,3 +11,6 @@ plugins:
   - local: protoc-gen-go-grpc
     out: gen/go
     opt: paths=source_relative
+  - local: protoc-gen-connect-go
+    out: gen/go
+    opt: paths=source_relative

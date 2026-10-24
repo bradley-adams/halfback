@@ -1,10 +1,11 @@
 module github.com/bradley-adams/halfback
 
-go 1.25.0
+go 1.26.0
 
 require google.golang.org/protobuf v1.36.12
 
 require (
+	connectrpc.com/connect v1.21.1 // indirect
 	github.com/ClickHouse/ch-go v0.74.0 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.49.0 // indirect
 	github.com/andybalholm/brotli v1.2.6 // indirect
@@ -29,4 +30,9 @@ require (
 	golang.org/x/text v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
+)
+
+tool (
+	connectrpc.com/connect
+	connectrpc.com/connect/cmd/protoc-gen-connect-go
 )
