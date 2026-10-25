@@ -7,7 +7,7 @@
 package apiv1
 
 import (
-	_ "github.com/bradley-adams/halfback/gen/go/google/api"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
