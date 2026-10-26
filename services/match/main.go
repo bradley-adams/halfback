@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"log"
-	"net"
+	"net/http"
 	"os"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
-	"google.golang.org/grpc"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
-	matchv1 "github.com/bradley-adams/halfback/gen/go/halfback/match/v1"
+	matchv1connect "github.com/bradley-adams/halfback/gen/go/halfback/match/v1/matchv1connect"
 )
 
 func getEnv(key, fallback string) string {
@@ -40,16 +41,17 @@ func main() {
 		log.Fatal("failed to ping clickhouse: ", err)
 	}
 
-	lis, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		log.Fatal("failed to listen: ", err)
-	}
-
-	grpcServer := grpc.NewServer()
-	matchv1.RegisterMatchServiceServer(grpcServer, NewMatchServer(conn))
+	mux := http.NewServeMux()
+	path, handler := matchv1connect.NewMatchServiceHandler(NewMatchServer(conn))
+	mux.Handle(path, handler)
 
 	log.Println("MatchService listening on :50051")
-	if err := grpcServer.Serve(lis); err != nil {
+	err = http.ListenAndServe(
+		":50051",
+		// h2c serves HTTP/2 without TLS, so plain gRPC clients still work locally.
+		h2c.NewHandler(mux, &http2.Server{}),
+	)
+	if err != nil {
 		log.Fatal("failed to serve: ", err)
 	}
 }
