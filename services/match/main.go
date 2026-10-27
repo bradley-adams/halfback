@@ -7,8 +7,6 @@ import (
 	"os"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 
 	matchv1connect "github.com/bradley-adams/halfback/gen/go/halfback/match/v1/matchv1connect"
 )
@@ -45,13 +43,18 @@ func main() {
 	path, handler := matchv1connect.NewMatchServiceHandler(NewMatchServer(conn))
 	mux.Handle(path, handler)
 
+	protocols := new(http.Protocols)
+	protocols.SetHTTP1(true)
+	protocols.SetUnencryptedHTTP2(true)
+
+	server := &http.Server{
+		Addr:      ":50051",
+		Handler:   mux,
+		Protocols: protocols,
+	}
+
 	log.Println("MatchService listening on :50051")
-	err = http.ListenAndServe(
-		":50051",
-		// h2c serves HTTP/2 without TLS, so plain gRPC clients still work locally.
-		h2c.NewHandler(mux, &http2.Server{}),
-	)
-	if err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("failed to serve: ", err)
 	}
 }
