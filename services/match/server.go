@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"connectrpc.com/connect"
 	"github.com/ClickHouse/clickhouse-go/v2"
 
 	matchv1 "github.com/bradley-adams/halfback/gen/go/halfback/match/v1"
@@ -22,14 +21,14 @@ func NewMatchServer(conn clickhouse.Conn) *MatchServer {
 
 func (s *MatchServer) ListMatchEvents(
 	ctx context.Context,
-	req *connect.Request[matchv1.ListMatchEventsRequest],
-) (*connect.Response[matchv1.ListMatchEventsResponse], error) {
+	req *matchv1.ListMatchEventsRequest,
+) (*matchv1.ListMatchEventsResponse, error) {
 	rows, err := s.conn.Query(ctx, `
 		SELECT event_id, event_type, event_time.seconds
 		FROM halfback.match_events FINAL
 		WHERE match_id = $1
 		ORDER BY event_time.seconds
-	`, req.Msg.MatchId)
+	`, req.MatchId)
 	if err != nil {
 		return nil, fmt.Errorf("query match events: %w", err)
 	}
@@ -57,5 +56,5 @@ func (s *MatchServer) ListMatchEvents(
 		return nil, fmt.Errorf("iterate match event rows: %w", err)
 	}
 
-	return connect.NewResponse(resp), nil
+	return resp, nil
 }

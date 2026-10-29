@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"connectrpc.com/connect/v2"
+	"connectrpc.com/connect/v2/connecthttp"
 	"github.com/ClickHouse/clickhouse-go/v2"
 
 	matchv1connect "github.com/bradley-adams/halfback/gen/go/halfback/match/v1/matchv1connect"
@@ -39,22 +41,24 @@ func main() {
 		log.Fatal("failed to ping clickhouse: ", err)
 	}
 
+	server := connect.NewServer()
+	matchv1connect.RegisterMatchServiceHandler(server, NewMatchServer(conn))
+
 	mux := http.NewServeMux()
-	path, handler := matchv1connect.NewMatchServiceHandler(NewMatchServer(conn))
-	mux.Handle(path, handler)
+	connecthttp.Mount(mux, server)
 
 	protocols := new(http.Protocols)
 	protocols.SetHTTP1(true)
 	protocols.SetUnencryptedHTTP2(true)
 
-	server := &http.Server{
+	httpServer := &http.Server{
 		Addr:      ":50051",
 		Handler:   mux,
 		Protocols: protocols,
 	}
 
 	log.Println("MatchService listening on :50051")
-	if err := server.ListenAndServe(); err != nil {
+	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatal("failed to serve: ", err)
 	}
 }

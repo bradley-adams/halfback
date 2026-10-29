@@ -10,6 +10,8 @@ require (
 )
 
 require (
+	connectrpc.com/connect/v2 v2.0.2 // indirect
+	connectrpc.com/vanguard v0.5.0 // indirect
 	github.com/ClickHouse/ch-go v0.74.0 // indirect
 	github.com/andybalholm/brotli v1.2.6 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -32,7 +34,7 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261012220534-4341edf3f941 // indirect
-	google.golang.org/grpc v1.83.1
+	google.golang.org/grpc v1.83.2
 )
 
 tool (
