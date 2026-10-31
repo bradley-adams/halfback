@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+	crand "crypto/rand"
+	"encoding/hex"
 	"math/rand"
 	"time"
 
@@ -51,13 +52,23 @@ func pickPrimaryEventType() eventsv1.EventType {
 	return primaryScoringPlays[0].eventType // unreachable
 }
 
+// newEventID returns a random ID. It is generated once, at the source,
+// so a sink retry resends the same ID and still dedups, while a source
+// restart can never reuse an ID from an earlier run.
+func newEventID() string {
+	b := make([]byte, 8)
+	if _, err := crand.Read(b); err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b)
+}
+
 // MatchEventSource is a user-defined Numaflow source that generates
 // fake MatchEvent messages. It has no real backlog or durability, since
 // every message is invented on the fly.
 type MatchEventSource struct {
-	matchID  string
-	eventNum int
-	pending  []eventsv1.EventType
+	matchID string
+	pending []eventsv1.EventType
 }
 
 func NewMatchEventSource() *MatchEventSource {
@@ -85,9 +96,8 @@ func (s *MatchEventSource) Read(ctx context.Context, readRequest sourcesdk.ReadR
 			}
 		}
 
-		s.eventNum++
 		event := &eventsv1.MatchEvent{
-			EventId:   fmt.Sprintf("evt-%d", s.eventNum),
+			EventId:   newEventID(),
 			MatchId:   s.matchID,
 			EventTime: timestamppb.Now(),
 			EventType: eventType,
