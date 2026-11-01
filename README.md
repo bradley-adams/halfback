@@ -1,5 +1,5 @@
 # halfback
-Rugby event pipeline: Numaflow → ClickHouse → gRPC services → API (in progress).
+Rugby event pipeline: Numaflow → ClickHouse → Connect service → REST API.
 
 ## Local ClickHouse
 Container: `halfback-clickhouse` (password: `halfback`)
@@ -26,16 +26,28 @@ kubectl delete pod -l numaflow.numaproj.io/vertex-name=in                # or ve
 ClickHouse is reached from inside the cluster via a Service/Endpoints pointing at the Docker `kind` network's gateway IP (see `deploy/clickhouse/service.yaml`). If the kind cluster is ever recreated, that IP may need updating — check with:
 `docker network inspect kind -f '{{json .IPAM.Config}}'`
 
-## MatchService (Connect — gRPC, gRPC-Web, and plain HTTP/JSON)
+## MatchService (Connect v2)
 Run locally: `go run ./services/match` (listens on :50051)
 Requires ClickHouse running (see above).
 
-Test with grpcurl (works unmodified against Connect):
-grpcurl -plaintext -import-path proto -proto halfback/match/v1/match.proto \
-  -d '{"match_id": "match-1"}' \
-  localhost:50051 halfback.match.v1.MatchService/ListMatchEvents
-
-Or test with plain curl, no gRPC tooling required:
+Test with plain curl, no gRPC tooling required:
+```bash
 curl -s -X POST http://localhost:50051/halfback.match.v1.MatchService/ListMatchEvents \
   -H "Content-Type: application/json" \
   -d '{"match_id": "match-1"}'
+```
+
+## API (REST via Vanguard)
+Run locally: `go run ./api` (listens on :8080)
+Requires MatchService and ClickHouse running (see above).
+
+```bash
+curl -s http://localhost:8080/v1/matches/match-1/events
+```
+
+## Protos
+- `proto/halfback/events/v1`: pipeline/storage schema (ClickHouse tables are inferred from this)
+- `proto/halfback/match/v1`: internal MatchService contract
+- `proto/halfback/api/v1`: public contract, with `google.api.http` annotations for REST
+
+Regenerate code after editing a proto: `buf generate`
