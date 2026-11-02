@@ -14,6 +14,9 @@ import (
 	eventsv1 "github.com/bradley-adams/halfback/gen/go/halfback/events/v1"
 )
 
+// matchIDs are the matches the simulator plays concurrently.
+var matchIDs = []string{"match-1", "match-2", "match-3", "match-4"}
+
 type weightedEventType struct {
 	eventType eventsv1.EventType
 	weight    int
@@ -63,16 +66,22 @@ func newEventID() string {
 	return hex.EncodeToString(b)
 }
 
+// pendingEvent is a follow-up event (a conversion) that must be emitted
+// next, for the same match as the try that caused it.
+type pendingEvent struct {
+	matchID   string
+	eventType eventsv1.EventType
+}
+
 // MatchEventSource is a user-defined Numaflow source that generates
-// fake MatchEvent messages. It has no real backlog or durability, since
-// every message is invented on the fly.
+// fake MatchEvent messages across several matches. It has no real
+// backlog or durability, since every message is invented on the fly.
 type MatchEventSource struct {
-	matchID string
-	pending []eventsv1.EventType
+	pending []pendingEvent
 }
 
 func NewMatchEventSource() *MatchEventSource {
-	return &MatchEventSource{matchID: "match-1"}
+	return &MatchEventSource{}
 }
 
 // Read generates up to readRequest.Count() messages and sends them to messageCh.
@@ -85,20 +94,26 @@ func (s *MatchEventSource) Read(ctx context.Context, readRequest sourcesdk.ReadR
 			return
 		}
 
+		var matchID string
 		var eventType eventsv1.EventType
 		if len(s.pending) > 0 {
-			eventType = s.pending[0]
+			matchID = s.pending[0].matchID
+			eventType = s.pending[0].eventType
 			s.pending = s.pending[1:]
 		} else {
+			matchID = matchIDs[rand.Intn(len(matchIDs))]
 			eventType = pickPrimaryEventType()
 			if eventType == eventsv1.EventType_EVENT_TYPE_TRY && rand.Float64() < conversionSuccessRate {
-				s.pending = append(s.pending, eventsv1.EventType_EVENT_TYPE_CONVERSION)
+				s.pending = append(s.pending, pendingEvent{
+					matchID:   matchID,
+					eventType: eventsv1.EventType_EVENT_TYPE_CONVERSION,
+				})
 			}
 		}
 
 		event := &eventsv1.MatchEvent{
 			EventId:   newEventID(),
-			MatchId:   s.matchID,
+			MatchId:   matchID,
 			EventTime: timestamppb.Now(),
 			EventType: eventType,
 		}
