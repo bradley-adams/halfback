@@ -5,105 +5,94 @@
 package apiv1connect
 
 import (
-	connect "connectrpc.com/connect"
+	connect "connectrpc.com/connect/v2"
 	context "context"
-	errors "errors"
 	v1 "github.com/bradley-adams/halfback/gen/go/halfback/api/v1"
-	http "net/http"
-	strings "strings"
+	sync "sync"
 )
-
-// This is a compile-time assertion to ensure that this generated file and the connect package are
-// compatible. If you get a compiler error that this constant is not defined, this code was
-// generated with a version of connect newer than the one compiled into your binary. You can fix the
-// problem by either regenerating this code with an older version of connect or updating the connect
-// version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// MatchPublicServiceName is the fully-qualified name of the MatchPublicService service.
 	MatchPublicServiceName = "halfback.api.v1.MatchPublicService"
 )
 
-// These constants are the fully-qualified names of the RPCs defined in this package. They're
-// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
 //
 // Note that these are different from the fully-qualified method names used by
 // google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// MatchPublicServiceListMatchEventsProcedure is the fully-qualified name of the
-	// MatchPublicService's ListMatchEvents RPC.
+	// MatchPublicServiceListMatchEventsProcedure is the procedure name of the MatchPublicService's
+	// ListMatchEvents RPC.
 	MatchPublicServiceListMatchEventsProcedure = "/halfback.api.v1.MatchPublicService/ListMatchEvents"
+)
+
+var (
+	matchPublicServiceListMatchEventsSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_halfback_api_v1_api_proto.Services().ByName("MatchPublicService").Methods().ByName("ListMatchEvents"),
+			Procedure:  MatchPublicServiceListMatchEventsProcedure,
+		}
+	})
 )
 
 // MatchPublicServiceClient is a client for the halfback.api.v1.MatchPublicService service.
 type MatchPublicServiceClient interface {
-	ListMatchEvents(context.Context, *connect.Request[v1.ListMatchEventsRequest]) (*connect.Response[v1.ListMatchEventsResponse], error)
+	ListMatchEvents(context.Context, *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error)
 }
 
 // NewMatchPublicServiceClient constructs a client for the halfback.api.v1.MatchPublicService
-// service. By default, it uses the Connect protocol with the binary Protobuf Codec, asks for
-// gzipped responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply
-// the connect.WithGRPC() or connect.WithGRPCWeb() options.
-//
-// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
-// http://api.acme.com or https://acme.com/grpc).
-func NewMatchPublicServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) MatchPublicServiceClient {
-	baseURL = strings.TrimRight(baseURL, "/")
-	matchPublicServiceMethods := v1.File_halfback_api_v1_api_proto.Services().ByName("MatchPublicService").Methods()
-	return &matchPublicServiceClient{
-		listMatchEvents: connect.NewClient[v1.ListMatchEventsRequest, v1.ListMatchEventsResponse](
-			httpClient,
-			baseURL+MatchPublicServiceListMatchEventsProcedure,
-			connect.WithSchema(matchPublicServiceMethods.ByName("ListMatchEvents")),
-			connect.WithClientOptions(opts...),
-		),
-	}
-}
-
-// matchPublicServiceClient implements MatchPublicServiceClient.
-type matchPublicServiceClient struct {
-	listMatchEvents *connect.Client[v1.ListMatchEventsRequest, v1.ListMatchEventsResponse]
-}
-
-// ListMatchEvents calls halfback.api.v1.MatchPublicService.ListMatchEvents.
-func (c *matchPublicServiceClient) ListMatchEvents(ctx context.Context, req *connect.Request[v1.ListMatchEventsRequest]) (*connect.Response[v1.ListMatchEventsResponse], error) {
-	return c.listMatchEvents.CallUnary(ctx, req)
+// service. Multiple service clients may share a single connect.Client.
+func NewMatchPublicServiceClient(client *connect.Client) MatchPublicServiceClient {
+	return &matchPublicServiceClient{client: client}
 }
 
 // MatchPublicServiceHandler is an implementation of the halfback.api.v1.MatchPublicService service.
 type MatchPublicServiceHandler interface {
-	ListMatchEvents(context.Context, *connect.Request[v1.ListMatchEventsRequest]) (*connect.Response[v1.ListMatchEventsResponse], error)
+	ListMatchEvents(context.Context, *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error)
 }
 
-// NewMatchPublicServiceHandler builds an HTTP handler from the service implementation. It returns
-// the path on which to mount the handler and the handler itself.
-//
-// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
-// and JSON codecs. They also support gzip compression.
-func NewMatchPublicServiceHandler(svc MatchPublicServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	matchPublicServiceMethods := v1.File_halfback_api_v1_api_proto.Services().ByName("MatchPublicService").Methods()
-	matchPublicServiceListMatchEventsHandler := connect.NewUnaryHandler(
-		MatchPublicServiceListMatchEventsProcedure,
-		svc.ListMatchEvents,
-		connect.WithSchema(matchPublicServiceMethods.ByName("ListMatchEvents")),
-		connect.WithHandlerOptions(opts...),
+// RegisterMatchPublicServiceHandler registers svc as the halfback.api.v1.MatchPublicService
+// implementation on server.
+func RegisterMatchPublicServiceHandler(server *connect.Server, svc MatchPublicServiceHandler) {
+	adapter := matchPublicServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: matchPublicServiceListMatchEventsSpec(), Handler: adapter.listMatchEvents},
 	)
-	return "/halfback.api.v1.MatchPublicService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case MatchPublicServiceListMatchEventsProcedure:
-			matchPublicServiceListMatchEventsHandler.ServeHTTP(w, r)
-		default:
-			http.NotFound(w, r)
-		}
-	})
 }
 
 // UnimplementedMatchPublicServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedMatchPublicServiceHandler struct{}
 
-func (UnimplementedMatchPublicServiceHandler) ListMatchEvents(context.Context, *connect.Request[v1.ListMatchEventsRequest]) (*connect.Response[v1.ListMatchEventsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("halfback.api.v1.MatchPublicService.ListMatchEvents is not implemented"))
+func (UnimplementedMatchPublicServiceHandler) ListMatchEvents(context.Context, *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "halfback.api.v1.MatchPublicService.ListMatchEvents is not implemented")
+}
+
+type matchPublicServiceClient struct {
+	client *connect.Client
+}
+
+func (c *matchPublicServiceClient) ListMatchEvents(ctx context.Context, req *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error) {
+	var res v1.ListMatchEventsResponse
+	if err := c.client.CallUnary(ctx, matchPublicServiceListMatchEventsSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+type matchPublicServiceHandler struct{ svc MatchPublicServiceHandler }
+
+func (h matchPublicServiceHandler) listMatchEvents(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListMatchEventsRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListMatchEvents(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
 }
