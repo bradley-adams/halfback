@@ -8,6 +8,10 @@ service MatchPublicService {
   rpc ListMatchEvents(ListMatchEventsRequest) returns (ListMatchEventsResponse) {
     option (google.api.http) = {get: "/v1/matches/{match_id}/events"};
   }
+
+  rpc ListMatches(ListMatchesRequest) returns (ListMatchesResponse) {
+    option (google.api.http) = {get: "/v1/matches"};
+  }
 }
 
 message ListMatchEventsRequest {
@@ -22,4 +26,16 @@ message MatchEventSummary {
 
 message ListMatchEventsResponse {
   repeated MatchEventSummary events = 1;
+}
+
+message ListMatchesRequest {}
+
+message MatchScore {
+  string match_id = 1;
+  int64 event_count = 2;
+  int64 total_points = 3;
+}
+
+message ListMatchesResponse {
+  repeated MatchScore matches = 1;
 }

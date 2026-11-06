@@ -11,6 +11,7 @@ import (
 
 	apiv1connect "github.com/bradley-adams/halfback/gen/go/halfback/api/v1/apiv1connect"
 	matchv1connect "github.com/bradley-adams/halfback/gen/go/halfback/match/v1/matchv1connect"
+	scoreboardv1connect "github.com/bradley-adams/halfback/gen/go/halfback/scoreboard/v1/scoreboardv1connect"
 )
 
 func getEnv(key, fallback string) string {
@@ -22,12 +23,16 @@ func getEnv(key, fallback string) string {
 
 func main() {
 	matchServiceURL := getEnv("MATCH_SERVICE_URL", "http://localhost:50051")
+	scoreboardServiceURL := getEnv("SCOREBOARD_SERVICE_URL", "http://localhost:50052")
 
 	matchClient := matchv1connect.NewMatchServiceClient(
 		connect.NewClient(connecthttp.NewTransport(http.DefaultClient, matchServiceURL)),
 	)
+	scoreboardClient := scoreboardv1connect.NewScoreboardServiceClient(
+		connect.NewClient(connecthttp.NewTransport(http.DefaultClient, scoreboardServiceURL)),
+	)
 
-	publicServer := NewMatchPublicServer(matchClient)
+	publicServer := NewMatchPublicServer(matchClient, scoreboardClient)
 
 	server := connect.NewServer()
 	apiv1connect.RegisterMatchPublicServiceHandler(server, publicServer)

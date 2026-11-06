@@ -27,6 +27,9 @@ const (
 	// MatchPublicServiceListMatchEventsProcedure is the procedure name of the MatchPublicService's
 	// ListMatchEvents RPC.
 	MatchPublicServiceListMatchEventsProcedure = "/halfback.api.v1.MatchPublicService/ListMatchEvents"
+	// MatchPublicServiceListMatchesProcedure is the procedure name of the MatchPublicService's
+	// ListMatches RPC.
+	MatchPublicServiceListMatchesProcedure = "/halfback.api.v1.MatchPublicService/ListMatches"
 )
 
 var (
@@ -37,11 +40,19 @@ var (
 			Procedure:  MatchPublicServiceListMatchEventsProcedure,
 		}
 	})
+	matchPublicServiceListMatchesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_halfback_api_v1_api_proto.Services().ByName("MatchPublicService").Methods().ByName("ListMatches"),
+			Procedure:  MatchPublicServiceListMatchesProcedure,
+		}
+	})
 )
 
 // MatchPublicServiceClient is a client for the halfback.api.v1.MatchPublicService service.
 type MatchPublicServiceClient interface {
 	ListMatchEvents(context.Context, *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error)
+	ListMatches(context.Context, *v1.ListMatchesRequest) (*v1.ListMatchesResponse, error)
 }
 
 // NewMatchPublicServiceClient constructs a client for the halfback.api.v1.MatchPublicService
@@ -53,6 +64,7 @@ func NewMatchPublicServiceClient(client *connect.Client) MatchPublicServiceClien
 // MatchPublicServiceHandler is an implementation of the halfback.api.v1.MatchPublicService service.
 type MatchPublicServiceHandler interface {
 	ListMatchEvents(context.Context, *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error)
+	ListMatches(context.Context, *v1.ListMatchesRequest) (*v1.ListMatchesResponse, error)
 }
 
 // RegisterMatchPublicServiceHandler registers svc as the halfback.api.v1.MatchPublicService
@@ -61,6 +73,7 @@ func RegisterMatchPublicServiceHandler(server *connect.Server, svc MatchPublicSe
 	adapter := matchPublicServiceHandler{svc: svc}
 	server.Register(
 		connect.Method{Spec: matchPublicServiceListMatchEventsSpec(), Handler: adapter.listMatchEvents},
+		connect.Method{Spec: matchPublicServiceListMatchesSpec(), Handler: adapter.listMatches},
 	)
 }
 
@@ -69,6 +82,10 @@ type UnimplementedMatchPublicServiceHandler struct{}
 
 func (UnimplementedMatchPublicServiceHandler) ListMatchEvents(context.Context, *v1.ListMatchEventsRequest) (*v1.ListMatchEventsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, "halfback.api.v1.MatchPublicService.ListMatchEvents is not implemented")
+}
+
+func (UnimplementedMatchPublicServiceHandler) ListMatches(context.Context, *v1.ListMatchesRequest) (*v1.ListMatchesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "halfback.api.v1.MatchPublicService.ListMatches is not implemented")
 }
 
 type matchPublicServiceClient struct {
@@ -83,6 +100,14 @@ func (c *matchPublicServiceClient) ListMatchEvents(ctx context.Context, req *v1.
 	return &res, nil
 }
 
+func (c *matchPublicServiceClient) ListMatches(ctx context.Context, req *v1.ListMatchesRequest) (*v1.ListMatchesResponse, error) {
+	var res v1.ListMatchesResponse
+	if err := c.client.CallUnary(ctx, matchPublicServiceListMatchesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
 type matchPublicServiceHandler struct{ svc MatchPublicServiceHandler }
 
 func (h matchPublicServiceHandler) listMatchEvents(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
@@ -91,6 +116,18 @@ func (h matchPublicServiceHandler) listMatchEvents(ctx context.Context, _ connec
 		return err
 	}
 	res, err := h.svc.ListMatchEvents(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h matchPublicServiceHandler) listMatches(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListMatchesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListMatches(ctx, &req)
 	if err != nil {
 		return err
 	}

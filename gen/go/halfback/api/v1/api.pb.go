@@ -170,6 +170,146 @@ func (x *ListMatchEventsResponse) GetEvents() []*MatchEventSummary {
 	return nil
 }
 
+type ListMatchesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMatchesRequest) Reset() {
+	*x = ListMatchesRequest{}
+	mi := &file_halfback_api_v1_api_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMatchesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMatchesRequest) ProtoMessage() {}
+
+func (x *ListMatchesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_halfback_api_v1_api_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMatchesRequest.ProtoReflect.Descriptor instead.
+func (*ListMatchesRequest) Descriptor() ([]byte, []int) {
+	return file_halfback_api_v1_api_proto_rawDescGZIP(), []int{3}
+}
+
+type MatchScore struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MatchId       string                 `protobuf:"bytes,1,opt,name=match_id,json=matchId,proto3" json:"match_id,omitempty"`
+	EventCount    int64                  `protobuf:"varint,2,opt,name=event_count,json=eventCount,proto3" json:"event_count,omitempty"`
+	TotalPoints   int64                  `protobuf:"varint,3,opt,name=total_points,json=totalPoints,proto3" json:"total_points,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MatchScore) Reset() {
+	*x = MatchScore{}
+	mi := &file_halfback_api_v1_api_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MatchScore) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MatchScore) ProtoMessage() {}
+
+func (x *MatchScore) ProtoReflect() protoreflect.Message {
+	mi := &file_halfback_api_v1_api_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MatchScore.ProtoReflect.Descriptor instead.
+func (*MatchScore) Descriptor() ([]byte, []int) {
+	return file_halfback_api_v1_api_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *MatchScore) GetMatchId() string {
+	if x != nil {
+		return x.MatchId
+	}
+	return ""
+}
+
+func (x *MatchScore) GetEventCount() int64 {
+	if x != nil {
+		return x.EventCount
+	}
+	return 0
+}
+
+func (x *MatchScore) GetTotalPoints() int64 {
+	if x != nil {
+		return x.TotalPoints
+	}
+	return 0
+}
+
+type ListMatchesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Matches       []*MatchScore          `protobuf:"bytes,1,rep,name=matches,proto3" json:"matches,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMatchesResponse) Reset() {
+	*x = ListMatchesResponse{}
+	mi := &file_halfback_api_v1_api_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMatchesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMatchesResponse) ProtoMessage() {}
+
+func (x *ListMatchesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_halfback_api_v1_api_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMatchesResponse.ProtoReflect.Descriptor instead.
+func (*ListMatchesResponse) Descriptor() ([]byte, []int) {
+	return file_halfback_api_v1_api_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListMatchesResponse) GetMatches() []*MatchScore {
+	if x != nil {
+		return x.Matches
+	}
+	return nil
+}
+
 var File_halfback_api_v1_api_proto protoreflect.FileDescriptor
 
 const file_halfback_api_v1_api_proto_rawDesc = "" +
@@ -183,9 +323,19 @@ const file_halfback_api_v1_api_proto_rawDesc = "" +
 	"event_type\x18\x02 \x01(\tR\teventType\x12,\n" +
 	"\x12event_time_seconds\x18\x03 \x01(\x03R\x10eventTimeSeconds\"U\n" +
 	"\x17ListMatchEventsResponse\x12:\n" +
-	"\x06events\x18\x01 \x03(\v2\".halfback.api.v1.MatchEventSummaryR\x06events2\xa2\x01\n" +
+	"\x06events\x18\x01 \x03(\v2\".halfback.api.v1.MatchEventSummaryR\x06events\"\x14\n" +
+	"\x12ListMatchesRequest\"k\n" +
+	"\n" +
+	"MatchScore\x12\x19\n" +
+	"\bmatch_id\x18\x01 \x01(\tR\amatchId\x12\x1f\n" +
+	"\vevent_count\x18\x02 \x01(\x03R\n" +
+	"eventCount\x12!\n" +
+	"\ftotal_points\x18\x03 \x01(\x03R\vtotalPoints\"L\n" +
+	"\x13ListMatchesResponse\x125\n" +
+	"\amatches\x18\x01 \x03(\v2\x1b.halfback.api.v1.MatchScoreR\amatches2\x91\x02\n" +
 	"\x12MatchPublicService\x12\x8b\x01\n" +
-	"\x0fListMatchEvents\x12'.halfback.api.v1.ListMatchEventsRequest\x1a(.halfback.api.v1.ListMatchEventsResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/matches/{match_id}/eventsB\xbd\x01\n" +
+	"\x0fListMatchEvents\x12'.halfback.api.v1.ListMatchEventsRequest\x1a(.halfback.api.v1.ListMatchEventsResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/matches/{match_id}/events\x12m\n" +
+	"\vListMatches\x12#.halfback.api.v1.ListMatchesRequest\x1a$.halfback.api.v1.ListMatchesResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/matchesB\xbd\x01\n" +
 	"\x13com.halfback.api.v1B\bApiProtoP\x01Z>github.com/bradley-adams/halfback/gen/go/halfback/api/v1;apiv1\xa2\x02\x03HAX\xaa\x02\x0fHalfback.Api.V1\xca\x02\x0fHalfback\\Api\\V1\xe2\x02\x1bHalfback\\Api\\V1\\GPBMetadata\xea\x02\x11Halfback::Api::V1b\x06proto3"
 
 var (
@@ -200,21 +350,27 @@ func file_halfback_api_v1_api_proto_rawDescGZIP() []byte {
 	return file_halfback_api_v1_api_proto_rawDescData
 }
 
-var file_halfback_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_halfback_api_v1_api_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_halfback_api_v1_api_proto_goTypes = []any{
 	(*ListMatchEventsRequest)(nil),  // 0: halfback.api.v1.ListMatchEventsRequest
 	(*MatchEventSummary)(nil),       // 1: halfback.api.v1.MatchEventSummary
 	(*ListMatchEventsResponse)(nil), // 2: halfback.api.v1.ListMatchEventsResponse
+	(*ListMatchesRequest)(nil),      // 3: halfback.api.v1.ListMatchesRequest
+	(*MatchScore)(nil),              // 4: halfback.api.v1.MatchScore
+	(*ListMatchesResponse)(nil),     // 5: halfback.api.v1.ListMatchesResponse
 }
 var file_halfback_api_v1_api_proto_depIdxs = []int32{
 	1, // 0: halfback.api.v1.ListMatchEventsResponse.events:type_name -> halfback.api.v1.MatchEventSummary
-	0, // 1: halfback.api.v1.MatchPublicService.ListMatchEvents:input_type -> halfback.api.v1.ListMatchEventsRequest
-	2, // 2: halfback.api.v1.MatchPublicService.ListMatchEvents:output_type -> halfback.api.v1.ListMatchEventsResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	4, // 1: halfback.api.v1.ListMatchesResponse.matches:type_name -> halfback.api.v1.MatchScore
+	0, // 2: halfback.api.v1.MatchPublicService.ListMatchEvents:input_type -> halfback.api.v1.ListMatchEventsRequest
+	3, // 3: halfback.api.v1.MatchPublicService.ListMatches:input_type -> halfback.api.v1.ListMatchesRequest
+	2, // 4: halfback.api.v1.MatchPublicService.ListMatchEvents:output_type -> halfback.api.v1.ListMatchEventsResponse
+	5, // 5: halfback.api.v1.MatchPublicService.ListMatches:output_type -> halfback.api.v1.ListMatchesResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_halfback_api_v1_api_proto_init() }
@@ -228,7 +384,7 @@ func file_halfback_api_v1_api_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_halfback_api_v1_api_proto_rawDesc), len(file_halfback_api_v1_api_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

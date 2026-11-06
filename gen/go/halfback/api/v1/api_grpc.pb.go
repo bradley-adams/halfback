@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	MatchPublicService_ListMatchEvents_FullMethodName = "/halfback.api.v1.MatchPublicService/ListMatchEvents"
+	MatchPublicService_ListMatches_FullMethodName     = "/halfback.api.v1.MatchPublicService/ListMatches"
 )
 
 // MatchPublicServiceClient is the client API for MatchPublicService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MatchPublicServiceClient interface {
 	ListMatchEvents(ctx context.Context, in *ListMatchEventsRequest, opts ...grpc.CallOption) (*ListMatchEventsResponse, error)
+	ListMatches(ctx context.Context, in *ListMatchesRequest, opts ...grpc.CallOption) (*ListMatchesResponse, error)
 }
 
 type matchPublicServiceClient struct {
@@ -47,11 +49,22 @@ func (c *matchPublicServiceClient) ListMatchEvents(ctx context.Context, in *List
 	return out, nil
 }
 
+func (c *matchPublicServiceClient) ListMatches(ctx context.Context, in *ListMatchesRequest, opts ...grpc.CallOption) (*ListMatchesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMatchesResponse)
+	err := c.cc.Invoke(ctx, MatchPublicService_ListMatches_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MatchPublicServiceServer is the server API for MatchPublicService service.
 // All implementations must embed UnimplementedMatchPublicServiceServer
 // for forward compatibility.
 type MatchPublicServiceServer interface {
 	ListMatchEvents(context.Context, *ListMatchEventsRequest) (*ListMatchEventsResponse, error)
+	ListMatches(context.Context, *ListMatchesRequest) (*ListMatchesResponse, error)
 	mustEmbedUnimplementedMatchPublicServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedMatchPublicServiceServer struct{}
 
 func (UnimplementedMatchPublicServiceServer) ListMatchEvents(context.Context, *ListMatchEventsRequest) (*ListMatchEventsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListMatchEvents not implemented")
+}
+func (UnimplementedMatchPublicServiceServer) ListMatches(context.Context, *ListMatchesRequest) (*ListMatchesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMatches not implemented")
 }
 func (UnimplementedMatchPublicServiceServer) mustEmbedUnimplementedMatchPublicServiceServer() {}
 func (UnimplementedMatchPublicServiceServer) testEmbeddedByValue()                            {}
@@ -104,6 +120,24 @@ func _MatchPublicService_ListMatchEvents_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MatchPublicService_ListMatches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMatchesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MatchPublicServiceServer).ListMatches(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MatchPublicService_ListMatches_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MatchPublicServiceServer).ListMatches(ctx, req.(*ListMatchesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MatchPublicService_ServiceDesc is the grpc.ServiceDesc for MatchPublicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var MatchPublicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMatchEvents",
 			Handler:    _MatchPublicService_ListMatchEvents_Handler,
+		},
+		{
+			MethodName: "ListMatches",
+			Handler:    _MatchPublicService_ListMatches_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
