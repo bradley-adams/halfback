@@ -4,42 +4,20 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 
 	"connectrpc.com/connect/v2"
 	"connectrpc.com/connect/v2/connecthttp"
-	"github.com/ClickHouse/clickhouse-go/v2"
 
 	matchv1connect "github.com/bradley-adams/halfback/gen/go/halfback/match/v1/matchv1connect"
+	"github.com/bradley-adams/halfback/internal/chconn"
 )
 
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
-}
-
 func main() {
-	host := getEnv("CLICKHOUSE_HOST", "localhost:9000")
-	password := getEnv("CLICKHOUSE_PASSWORD", "halfback")
-
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{host},
-		Auth: clickhouse.Auth{
-			Database: "halfback",
-			Username: "default",
-			Password: password,
-		},
-	})
+	conn, err := chconn.Open(context.Background())
 	if err != nil {
-		log.Fatal("failed to connect to clickhouse: ", err)
+		log.Fatal(err)
 	}
 	defer conn.Close()
-
-	if err := conn.Ping(context.Background()); err != nil {
-		log.Fatal("failed to ping clickhouse: ", err)
-	}
 
 	server := connect.NewServer()
 	matchv1connect.RegisterMatchServiceHandler(server, NewMatchServer(conn))
