@@ -18,4 +18,5 @@ message MatchEvent {
   string match_id = 2;
   google.protobuf.Timestamp event_time = 3;
   EventType event_type = 4;
+  string team = 5;
 }

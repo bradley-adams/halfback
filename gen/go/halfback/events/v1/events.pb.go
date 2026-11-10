@@ -86,6 +86,7 @@ type MatchEvent struct {
 	MatchId       string                 `protobuf:"bytes,2,opt,name=match_id,json=matchId,proto3" json:"match_id,omitempty"`
 	EventTime     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=event_time,json=eventTime,proto3" json:"event_time,omitempty"`
 	EventType     EventType              `protobuf:"varint,4,opt,name=event_type,json=eventType,proto3,enum=halfback.events.v1.EventType" json:"event_type,omitempty"`
+	Team          string                 `protobuf:"bytes,5,opt,name=team,proto3" json:"team,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -148,11 +149,18 @@ func (x *MatchEvent) GetEventType() EventType {
 	return EventType_EVENT_TYPE_UNSPECIFIED
 }
 
+func (x *MatchEvent) GetTeam() string {
+	if x != nil {
+		return x.Team
+	}
+	return ""
+}
+
 var File_halfback_events_v1_events_proto protoreflect.FileDescriptor
 
 const file_halfback_events_v1_events_proto_rawDesc = "" +
 	"\n" +
-	"\x1fhalfback/events/v1/events.proto\x12\x12halfback.events.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbb\x01\n" +
+	"\x1fhalfback/events/v1/events.proto\x12\x12halfback.events.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcf\x01\n" +
 	"\n" +
 	"MatchEvent\x12\x19\n" +
 	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12\x19\n" +
@@ -160,7 +168,8 @@ const file_halfback_events_v1_events_proto_rawDesc = "" +
 	"\n" +
 	"event_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\teventTime\x12<\n" +
 	"\n" +
-	"event_type\x18\x04 \x01(\x0e2\x1d.halfback.events.v1.EventTypeR\teventType*\xa9\x01\n" +
+	"event_type\x18\x04 \x01(\x0e2\x1d.halfback.events.v1.EventTypeR\teventType\x12\x12\n" +
+	"\x04team\x18\x05 \x01(\tR\x04team*\xa9\x01\n" +
 	"\tEventType\x12\x1a\n" +
 	"\x16EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eEVENT_TYPE_TRY\x10\x01\x12\x1a\n" +
