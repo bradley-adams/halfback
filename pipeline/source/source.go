@@ -17,6 +17,9 @@ import (
 // matchIDs are the matches the simulator plays concurrently.
 var matchIDs = []string{"match-1", "match-2", "match-3", "match-4"}
 
+// teams are the two sides in every match.
+var teams = []string{"home", "away"}
+
 type weightedEventType struct {
 	eventType eventsv1.EventType
 	weight    int
@@ -67,9 +70,10 @@ func newEventID() string {
 }
 
 // pendingEvent is a follow-up event (a conversion) that must be emitted
-// next, for the same match as the try that caused it.
+// next, for the same match and team as the try that caused it.
 type pendingEvent struct {
 	matchID   string
+	team      string
 	eventType eventsv1.EventType
 }
 
@@ -94,18 +98,21 @@ func (s *MatchEventSource) Read(ctx context.Context, readRequest sourcesdk.ReadR
 			return
 		}
 
-		var matchID string
+		var matchID, team string
 		var eventType eventsv1.EventType
 		if len(s.pending) > 0 {
 			matchID = s.pending[0].matchID
+			team = s.pending[0].team
 			eventType = s.pending[0].eventType
 			s.pending = s.pending[1:]
 		} else {
 			matchID = matchIDs[rand.Intn(len(matchIDs))]
+			team = teams[rand.Intn(len(teams))]
 			eventType = pickPrimaryEventType()
 			if eventType == eventsv1.EventType_EVENT_TYPE_TRY && rand.Float64() < conversionSuccessRate {
 				s.pending = append(s.pending, pendingEvent{
 					matchID:   matchID,
+					team:      team,
 					eventType: eventsv1.EventType_EVENT_TYPE_CONVERSION,
 				})
 			}
@@ -116,6 +123,7 @@ func (s *MatchEventSource) Read(ctx context.Context, readRequest sourcesdk.ReadR
 			MatchId:   matchID,
 			EventTime: timestamppb.Now(),
 			EventType: eventType,
+			Team:      team,
 		}
 
 		data, err := proto.Marshal(event)
