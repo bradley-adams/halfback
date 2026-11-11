@@ -12,6 +12,8 @@ message MatchScore {
   string match_id = 1;
   int64 event_count = 2;
   int64 total_points = 3;
+  int64 home_points = 4;
+  int64 away_points = 5;
 }
 
 message ListMatchesResponse {

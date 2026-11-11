@@ -62,6 +62,8 @@ type MatchScore struct {
 	MatchId       string                 `protobuf:"bytes,1,opt,name=match_id,json=matchId,proto3" json:"match_id,omitempty"`
 	EventCount    int64                  `protobuf:"varint,2,opt,name=event_count,json=eventCount,proto3" json:"event_count,omitempty"`
 	TotalPoints   int64                  `protobuf:"varint,3,opt,name=total_points,json=totalPoints,proto3" json:"total_points,omitempty"`
+	HomePoints    int64                  `protobuf:"varint,4,opt,name=home_points,json=homePoints,proto3" json:"home_points,omitempty"`
+	AwayPoints    int64                  `protobuf:"varint,5,opt,name=away_points,json=awayPoints,proto3" json:"away_points,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -117,6 +119,20 @@ func (x *MatchScore) GetTotalPoints() int64 {
 	return 0
 }
 
+func (x *MatchScore) GetHomePoints() int64 {
+	if x != nil {
+		return x.HomePoints
+	}
+	return 0
+}
+
+func (x *MatchScore) GetAwayPoints() int64 {
+	if x != nil {
+		return x.AwayPoints
+	}
+	return 0
+}
+
 type ListMatchesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Matches       []*MatchScore          `protobuf:"bytes,1,rep,name=matches,proto3" json:"matches,omitempty"`
@@ -166,13 +182,17 @@ var File_halfback_scoreboard_v1_scoreboard_proto protoreflect.FileDescriptor
 const file_halfback_scoreboard_v1_scoreboard_proto_rawDesc = "" +
 	"\n" +
 	"'halfback/scoreboard/v1/scoreboard.proto\x12\x16halfback.scoreboard.v1\"\x14\n" +
-	"\x12ListMatchesRequest\"k\n" +
+	"\x12ListMatchesRequest\"\xad\x01\n" +
 	"\n" +
 	"MatchScore\x12\x19\n" +
 	"\bmatch_id\x18\x01 \x01(\tR\amatchId\x12\x1f\n" +
 	"\vevent_count\x18\x02 \x01(\x03R\n" +
 	"eventCount\x12!\n" +
-	"\ftotal_points\x18\x03 \x01(\x03R\vtotalPoints\"S\n" +
+	"\ftotal_points\x18\x03 \x01(\x03R\vtotalPoints\x12\x1f\n" +
+	"\vhome_points\x18\x04 \x01(\x03R\n" +
+	"homePoints\x12\x1f\n" +
+	"\vaway_points\x18\x05 \x01(\x03R\n" +
+	"awayPoints\"S\n" +
 	"\x13ListMatchesResponse\x12<\n" +
 	"\amatches\x18\x01 \x03(\v2\".halfback.scoreboard.v1.MatchScoreR\amatches2{\n" +
 	"\x11ScoreboardService\x12f\n" +
