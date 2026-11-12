@@ -20,22 +20,33 @@ func NewScoreboardServer(conn clickhouse.Conn) *ScoreboardServer {
 }
 
 // Points per event type live here, not in the table: try 5, conversion 2,
-// penalty goal 3, drop goal 3, penalty try 7. The toInt64 casts matter
-// because count() and sum() return unsigned types, and the driver scans
-// integer types strictly.
+// penalty goal 3, drop goal 3, penalty try 7. Only events attributed to a
+// team are counted, so total_points always equals home_points + away_points.
+// Events written before team existed (team = ”) are excluded. The toInt64
+// casts matter because count() and sum() return unsigned types, and the
+// driver scans integer types strictly.
 const listMatchesQuery = `
 	SELECT
 		match_id,
 		toInt64(count()) AS event_count,
-		toInt64(sum(multiIf(
-			event_type = 'EVENT_TYPE_TRY', 5,
-			event_type = 'EVENT_TYPE_CONVERSION', 2,
-			event_type = 'EVENT_TYPE_PENALTY_GOAL', 3,
-			event_type = 'EVENT_TYPE_DROP_GOAL', 3,
-			event_type = 'EVENT_TYPE_PENALTY_TRY', 7,
-			0
-		))) AS total_points
-	FROM halfback.match_events FINAL
+		toInt64(sum(points)) AS total_points,
+		toInt64(sumIf(points, team = 'home')) AS home_points,
+		toInt64(sumIf(points, team = 'away')) AS away_points
+	FROM (
+		SELECT
+			match_id,
+			team,
+			multiIf(
+				event_type = 'EVENT_TYPE_TRY', 5,
+				event_type = 'EVENT_TYPE_CONVERSION', 2,
+				event_type = 'EVENT_TYPE_PENALTY_GOAL', 3,
+				event_type = 'EVENT_TYPE_DROP_GOAL', 3,
+				event_type = 'EVENT_TYPE_PENALTY_TRY', 7,
+				0
+			) AS points
+		FROM halfback.match_events FINAL
+		WHERE team IN ('home', 'away')
+	)
 	GROUP BY match_id
 	ORDER BY match_id
 `
@@ -57,8 +68,10 @@ func (s *ScoreboardServer) ListMatches(
 			matchID     string
 			eventCount  int64
 			totalPoints int64
+			homePoints  int64
+			awayPoints  int64
 		)
-		if err := rows.Scan(&matchID, &eventCount, &totalPoints); err != nil {
+		if err := rows.Scan(&matchID, &eventCount, &totalPoints, &homePoints, &awayPoints); err != nil {
 			return nil, fmt.Errorf("scan match row: %w", err)
 		}
 
@@ -66,6 +79,8 @@ func (s *ScoreboardServer) ListMatches(
 			MatchId:     matchID,
 			EventCount:  eventCount,
 			TotalPoints: totalPoints,
+			HomePoints:  homePoints,
+			AwayPoints:  awayPoints,
 		})
 	}
 	if err := rows.Err(); err != nil {
