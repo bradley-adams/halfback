@@ -1,5 +1,5 @@
 # halfback
-Rugby event pipeline: Numaflow → ClickHouse → Connect RPC services → REST API.
+Rugby event processing pipeline built with Numaflow, ClickHouse, Connect RPC, and Go.
 
 ## Local ClickHouse
 Container: `halfback-clickhouse` (password: `halfback`)
