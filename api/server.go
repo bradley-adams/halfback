@@ -69,6 +69,8 @@ func (s *MatchPublicServer) ListMatches(
 			MatchId:     m.MatchId,
 			EventCount:  m.EventCount,
 			TotalPoints: m.TotalPoints,
+			HomePoints:  m.HomePoints,
+			AwayPoints:  m.AwayPoints,
 		})
 	}
 

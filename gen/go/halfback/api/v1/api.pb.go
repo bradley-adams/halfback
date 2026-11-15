@@ -211,6 +211,8 @@ type MatchScore struct {
 	MatchId       string                 `protobuf:"bytes,1,opt,name=match_id,json=matchId,proto3" json:"match_id,omitempty"`
 	EventCount    int64                  `protobuf:"varint,2,opt,name=event_count,json=eventCount,proto3" json:"event_count,omitempty"`
 	TotalPoints   int64                  `protobuf:"varint,3,opt,name=total_points,json=totalPoints,proto3" json:"total_points,omitempty"`
+	HomePoints    int64                  `protobuf:"varint,4,opt,name=home_points,json=homePoints,proto3" json:"home_points,omitempty"`
+	AwayPoints    int64                  `protobuf:"varint,5,opt,name=away_points,json=awayPoints,proto3" json:"away_points,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -262,6 +264,20 @@ func (x *MatchScore) GetEventCount() int64 {
 func (x *MatchScore) GetTotalPoints() int64 {
 	if x != nil {
 		return x.TotalPoints
+	}
+	return 0
+}
+
+func (x *MatchScore) GetHomePoints() int64 {
+	if x != nil {
+		return x.HomePoints
+	}
+	return 0
+}
+
+func (x *MatchScore) GetAwayPoints() int64 {
+	if x != nil {
+		return x.AwayPoints
 	}
 	return 0
 }
@@ -324,13 +340,17 @@ const file_halfback_api_v1_api_proto_rawDesc = "" +
 	"\x12event_time_seconds\x18\x03 \x01(\x03R\x10eventTimeSeconds\"U\n" +
 	"\x17ListMatchEventsResponse\x12:\n" +
 	"\x06events\x18\x01 \x03(\v2\".halfback.api.v1.MatchEventSummaryR\x06events\"\x14\n" +
-	"\x12ListMatchesRequest\"k\n" +
+	"\x12ListMatchesRequest\"\xad\x01\n" +
 	"\n" +
 	"MatchScore\x12\x19\n" +
 	"\bmatch_id\x18\x01 \x01(\tR\amatchId\x12\x1f\n" +
 	"\vevent_count\x18\x02 \x01(\x03R\n" +
 	"eventCount\x12!\n" +
-	"\ftotal_points\x18\x03 \x01(\x03R\vtotalPoints\"L\n" +
+	"\ftotal_points\x18\x03 \x01(\x03R\vtotalPoints\x12\x1f\n" +
+	"\vhome_points\x18\x04 \x01(\x03R\n" +
+	"homePoints\x12\x1f\n" +
+	"\vaway_points\x18\x05 \x01(\x03R\n" +
+	"awayPoints\"L\n" +
 	"\x13ListMatchesResponse\x125\n" +
 	"\amatches\x18\x01 \x03(\v2\x1b.halfback.api.v1.MatchScoreR\amatches2\x91\x02\n" +
 	"\x12MatchPublicService\x12\x8b\x01\n" +
