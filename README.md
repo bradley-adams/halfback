@@ -1,6 +1,24 @@
 # halfback
 Rugby event processing pipeline built with Numaflow, ClickHouse, Connect RPC, and Go.
 
+## Architecture
+```mermaid
+flowchart LR
+    A["Numaflow<br/>Event Processing"] --> B[("ClickHouse<br/>Analytics Database")]
+    B --> C["Connect RPC<br/>Services"]
+    C --> D["REST API"]
+
+    classDef processing fill:#4338ca,color:#fff,stroke:#6366f1,stroke-width:2px
+    classDef database fill:#0f766e,color:#fff,stroke:#14b8a6,stroke-width:2px
+    classDef services fill:#6d28d9,color:#fff,stroke:#8b5cf6,stroke-width:2px
+    classDef api fill:#475569,color:#fff,stroke:#94a3b8,stroke-width:2px
+
+    class A processing
+    class B database
+    class C services
+    class D api
+```
+
 ## Local ClickHouse
 Container: `halfback-clickhouse` (password: `halfback`)
 Start after a reboot: `docker start halfback-clickhouse`
@@ -40,7 +58,7 @@ curl -s -X POST http://localhost:50051/halfback.match.v1.MatchService/ListMatchE
 
 ### ScoreboardService
 Run locally: `go run ./services/scoreboard` (listens on :50052)
-Per-match event count and total points, aggregated across all matches:
+Per-match event count and home, away and total points (only events with a team are counted):
 ```bash
 curl -s -X POST http://localhost:50052/halfback.scoreboard.v1.ScoreboardService/ListMatches \
   -H "Content-Type: application/json" \
